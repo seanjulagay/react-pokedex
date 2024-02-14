@@ -1,0 +1,39 @@
+.directory {
+  height: 100%;
+  width: 100%;
+  &.dex-closed {
+    opacity: 0;
+    visibility: hidden;
+  }
+  &.dex-opened {
+    opacity: 1;
+    transition: opacity 2s ease-in-out;
+    visibility: visible;
+  }
+  // &.dex-opened {
+  //   visibility: visible;
+  //   transition: visibility 0.5s ease-in-out;
+  // }
+  .directory-container {
+    height: 100%;
+    width: 100%;
+    padding: 2%;
+    display: flex;
+    flex-direction: column;
+    .directory-header-container {
+      flex: 1;
+      // background-color: green;
+      display: flex;
+      align-items: flex-end;
+    }
+    .directory-content-container {
+      flex: 9;
+      // background-color: red;\
+      display: grid;
+
+      * {
+        outline: 1px black solid;
+      }
+    }
+  }
+}

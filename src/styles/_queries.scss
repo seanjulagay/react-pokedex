@@ -1,0 +1,17 @@
+// @media screen and (orientation: portrait) and (max-aspect-ratio: 8/5) {
+//   body {
+//     background-color: blue;
+//   }
+// }
+
+// @media screen and (orientation: landscape) {
+//   body {
+//     background-color: green;
+//   }
+// }
+
+@media screen and ((orientation: portrait) or (max-aspect-ratio: 6/5)) {
+  body {
+    background-color: blue;
+  }
+}

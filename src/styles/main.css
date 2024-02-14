@@ -1,0 +1,226 @@
+* {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  font-family: "Pixelify Sans", monospace;
+}
+
+body,
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 62.5%;
+  overflow: hidden;
+}
+
+@media screen and ((orientation: portrait) or (max-aspect-ratio: 6/5)) {
+  body {
+    background-color: blue;
+  }
+}
+.dex {
+  height: 100vh;
+  width: 100%;
+  background-color: #242424;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dex .dex-container .dex-device {
+  position: relative;
+}
+.dex .dex-container .dex-device.dex-closed {
+  transform: translateX(25%);
+  transition: transform 0.5s ease-in-out;
+}
+.dex .dex-container .dex-device.dex-opened {
+  transition: transform 0.5s ease-in-out;
+}
+.dex .dex-container .dex-device .dex-power-switch {
+  position: absolute;
+  cursor: pointer;
+  border-radius: 100%;
+}
+.dex .dex-container .dex-device .dex-power-switch::before {
+  border-radius: 100%;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.2s ease-in-out;
+}
+.dex .dex-container .dex-device .dex-power-switch:hover::before {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.dex .dex-container .dex-device .dex-device-img {
+  height: 80vh;
+  width: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.dex .dex-container .dex-device .dex-left-screen {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+}
+.dex .dex-container .dex-device .dex-left-screen.dex-closed {
+  visibility: hidden;
+}
+.dex .dex-container .dex-device .dex-right-screen {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+}
+.dex .dex-container .dex-device .dex-right-screen.dex-closed {
+  visibility: hidden;
+}
+.dex .dex-container .dex-device .dex-search-button {
+  position: absolute;
+  background-color: blue;
+  margin: 0;
+  padding: 0;
+  border-radius: 100%;
+  cursor: pointer;
+}
+.dex .dex-container .dex-device .dex-search-button.dex-closed {
+  visibility: hidden;
+}
+.dex .dex-container .dex-device .dex-search-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.2s ease-in-out;
+}
+.dex .dex-container .dex-device .dex-search-button:hover::before {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.dex .dex-container .dex-device .dex-dpad-buttons {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons.dex-closed {
+  visibility: hidden;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row {
+  flex: 1;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row .dex-dpad {
+  height: 100%;
+  width: 33%;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  opacity: 0;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row .dex-dpad:hover {
+  opacity: 1;
+  transition: opacity 0.15s ease-in-out;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row .dex-dpad:not(:hover) {
+  transition: opacity 0.3s ease-in-out;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row.row-one {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row.row-two {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 33%;
+}
+.dex .dex-container .dex-device .dex-dpad-buttons .dpad-row.row-three {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dex .dex-container .dex-device .dex-scroll-buttons {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+}
+.dex .dex-container .dex-device .dex-scroll-buttons.dex-closed {
+  visibility: hidden;
+}
+.dex .dex-container .dex-device .dex-scroll-buttons .dex-scroll {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  cursor: pointer;
+}
+.dex .dex-container .dex-device .dex-scroll-buttons .dex-scroll .dex-scroll-overlay {
+  height: 100%;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-size: 40%;
+  background-position: center;
+}
+.dex .dex-container .dex-device .dex-scroll-buttons .dex-scroll .dex-scroll-overlay:not(:hover) {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+.dex .dex-container .dex-device .dex-scroll-buttons .dex-scroll .dex-scroll-overlay:hover {
+  opacity: 1;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.dex-interactable {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.directory {
+  height: 100%;
+  width: 100%;
+}
+.directory.dex-closed {
+  opacity: 0;
+  visibility: hidden;
+}
+.directory.dex-opened {
+  opacity: 1;
+  transition: opacity 2s ease-in-out;
+  visibility: visible;
+}
+.directory .directory-container {
+  height: 100%;
+  width: 100%;
+  padding: 2%;
+  display: flex;
+  flex-direction: column;
+}
+.directory .directory-container .directory-header-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+.directory .directory-container .directory-content-container {
+  flex: 9;
+  display: grid;
+}
+.directory .directory-container .directory-content-container * {
+  outline: 1px black solid;
+}/*# sourceMappingURL=main.css.map */
