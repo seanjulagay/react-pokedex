@@ -1,23 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function Directory({ dexOpened }) {
-  const [pokemon, setPokemon] = useState(["bulbasaur", "ivysaur"]);
-
-  useEffect(() => {
-    axios
-      .get("https://pokeapi.co/api/v2/pokemon?offset=8&limit=8")
-      .then((res) => {
-        setPokemon(res.data.results.map((mon) => mon.name));
-      });
-    console.log(pokemon);
-  }, []);
-
-  useEffect(() => {
-    if (dexOpened) {
-      handleTextSize();
-    }
-  }, [dexOpened]);
+export default function Directory({ dexOpened, pokemon, activeIndex }) {
+  // const handleNextSelection = () => {};
 
   return (
     <div className={`directory ${dexOpened ? "dex-opened" : "dex-closed"}`}>
@@ -25,36 +10,34 @@ export default function Directory({ dexOpened }) {
         <div className="directory-header-container">
           <h1 className="directory-header">Select Pokemon</h1>
         </div>
+        {/* {console.log(pokemon)}; */}
         <div className="directory-content-container">
-          <div className="directory-content-block">Item 1</div>
-          <div className="directory-content-block">Item 2</div>
-          <div className="directory-content-block">Item 3</div>
-          <div className="directory-content-block">Item 4</div>
-          <div className="directory-content-block">Item 5</div>
-          <div className="directory-content-block">Item 6</div>
-          <div className="directory-content-block">Item 7</div>
-          <div className="directory-content-block">Item 8</div>
+          {pokemon.map((mon, index) => {
+            return (
+              <div
+                key={index}
+                className={`directory-content-block ${
+                  activeIndex === index ? "active-index" : ""
+                }`}
+              >
+                {formatDirectoryItem(index, mon.name)}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-function handleTextSize() {
-  const changeTextSize = () => {
-    const directoryHeader = document.querySelector(".directory-header");
-    const dexImgWidth = window.getComputedStyle(
-      document.querySelector(".dex-device-img")
-    ).width;
+function formatDirectoryItem(index, mon) {
+  var monCaps = mon[0].toUpperCase() + mon.slice(1);
 
-    directoryHeader.style.fontSize = parseFloat(dexImgWidth) * 0.02 + "px";
-  };
-
-  changeTextSize();
-
-  window.addEventListener("resize", handleTextSize);
-
-  return () => {
-    window.removeEventListener("resize", handleTextSize);
-  };
+  if (index < 10) {
+    return "#00" + index + "   " + monCaps;
+  } else if (index >= 10 || index < 100) {
+    return "#0" + index + "   " + monCaps;
+  } else {
+    return "#" + index + "   " + monCaps;
+  }
 }

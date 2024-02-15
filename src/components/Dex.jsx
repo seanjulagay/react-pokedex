@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Directory from "./Directory";
+import TextArea from "./TextArea";
+import axios from "axios";
 
 export default function Dex() {
   const [dexOpened, setDexOpened] = useState(false);
@@ -19,6 +21,48 @@ export default function Dex() {
     setDexOpened(!dexOpened);
   };
 
+  const handleDpadBehavior = (direction) => {
+    if (direction == "up") {
+      if (activeIndex > 0) {
+        setActiveIndex(activeIndex - 1);
+      } else {
+        setOffset(offset - 1);
+      }
+    } else if (direction == "down") {
+      if (activeIndex < 7) {
+        setActiveIndex(activeIndex + 1);
+      } else {
+        setOffset(offset + 1);
+      }
+    }
+  };
+
+  const [pokemon, setPokemon] = useState([]);
+  const [pokemonData, setPokemonData] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [offset, setOffset] = useState(0);
+
+  const fetchPokemon = () => {
+    axios
+      .get(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=8`)
+      .then((res) => {
+        setPokemon(
+          res.data.results.map((mon) => ({ name: mon.name, url: mon.url }))
+        );
+      });
+    // console.log(pokemon);
+  };
+
+  const fetchPokemonData = () => {};
+
+  // const handleNextOffset = () => {
+  // }
+
+  useEffect(() => {
+    fetchPokemon();
+    fetchPokemonData();
+  }, []);
+
   useEffect(() => {
     setTimeout(() => {
       handlePowerSwitchPos();
@@ -29,10 +73,11 @@ export default function Dex() {
     if (dexOpened) {
       handleLeftScreenPos();
       handleRightScreenPos();
+      handleTextSize();
     }
     handleButtonsPos();
 
-    console.log("Running effect");
+    // console.log("Running effect");
   }, [dexOpened]);
 
   return (
@@ -57,14 +102,18 @@ export default function Dex() {
               dexOpened ? "dex-opened" : "dex-closed"
             }`}
           >
-            <Directory dexOpened={dexOpened} />
+            <Directory
+              dexOpened={dexOpened}
+              pokemon={pokemon}
+              activeIndex={activeIndex}
+            />
           </div>
           <div
             className={`dex-right-screen ${
               dexOpened ? "dex-opened" : "dex-closed"
             }`}
           >
-            Hello, world!
+            <TextArea dexOpened={dexOpened} />
           </div>
           <div
             style={{ backgroundImage: `url(${dexSearchBtnSrc})` }}
@@ -80,6 +129,7 @@ export default function Dex() {
           >
             <div className="dpad-row row-one">
               <div
+                onClick={() => handleDpadBehavior("up")}
                 className={`dex-dpad dpad-up ${
                   dexOpened ? "dex-opened" : "dex-closed"
                 }`}
@@ -99,6 +149,7 @@ export default function Dex() {
             </div>
             <div className="dpad-row row-three">
               <div
+                onClick={() => handleDpadBehavior("down")}
                 className={`dex-dpad dpad-down ${
                   dexOpened ? "dex-opened" : "dex-closed"
                 }`}
@@ -129,6 +180,40 @@ export default function Dex() {
       </div>
     </div>
   );
+}
+
+function handleTextSize() {
+  const changeTextSize = () => {
+    const directoryHeader = document.querySelector(".directory-header");
+    const directoryContentBlock = document.querySelectorAll(
+      ".directory-content-block"
+    );
+    const textAreaHeader = document.querySelectorAll(".text-area-header");
+    const textAreaContent = document.querySelectorAll(".text-area-content");
+    const dexImgWidth = window.getComputedStyle(
+      document.querySelector(".dex-device-img")
+    ).width;
+
+    directoryHeader.style.fontSize = parseFloat(dexImgWidth) * 0.02 + "px";
+    directoryContentBlock.forEach((element) => {
+      element.style.fontSize = parseFloat(dexImgWidth) * 0.016 + "px";
+    });
+
+    textAreaHeader.forEach((element) => {
+      element.style.fontSize = parseFloat(dexImgWidth) * 0.02 + "px";
+    });
+    textAreaContent.forEach((element) => {
+      element.style.fontSize = parseFloat(dexImgWidth) * 0.016 + "px";
+    });
+  };
+
+  changeTextSize();
+
+  window.addEventListener("resize", handleTextSize);
+
+  return () => {
+    window.removeEventListener("resize", handleTextSize);
+  };
 }
 
 function handleButtonsPos() {

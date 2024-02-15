@@ -221,6 +221,31 @@ html {
   flex: 9;
   display: grid;
 }
-.directory .directory-container .directory-content-container * {
-  outline: 1px black solid;
+.directory .directory-container .directory-content-container .directory-content-block {
+  padding: 0 3%;
+}
+.directory .directory-container .directory-content-container .directory-content-block.active-index {
+  background-color: #b1b1b1;
+  border-radius: 5px;
+  font-weight: bold;
+}
+.text-area {
+  height: 100%;
+  width: 100%;
+}
+.text-area.dex-closed {
+  opacity: 0;
+}
+.text-area.dex-opened {
+  opacity: 1;
+  transition: opacity 2s ease-in-out;
+}
+.text-area .text-area-container {
+  padding: 2%;
+}
+.text-area .text-area-container .text-area-header {
+  margin-bottom: 2%;
+}
+.text-area * {
+  color: #a3d89b;
 }/*# sourceMappingURL=main.css.map */
