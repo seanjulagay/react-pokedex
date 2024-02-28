@@ -1,0 +1,28 @@
+.details {
+  height: 100%;
+  width: 100;
+  &.dex-closed {
+    opacity: 0;
+  }
+  &.dex-opened {
+    opacity: 1;
+    transition: opacity 2s ease-in-out;
+  }
+  .details-container {
+    padding: 2%;
+    .details-header {
+      margin-bottom: 2%;
+    }
+    .pokemon-image {
+      filter: grayscale(100%) sepia(100%) hue-rotate(80deg) brightness(0.8)
+        saturate(2);
+      height: 30rem;
+      width: 30rem;
+      clip: rect(0, 100px, 100px, 0);
+      image-rendering: pixelated;
+    }
+  }
+  * {
+    color: #a3d89b;
+  }
+}

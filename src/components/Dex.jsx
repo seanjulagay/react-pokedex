@@ -1,21 +1,98 @@
 import React, { useState, useEffect } from "react";
 import Directory from "./Directory";
-import TextArea from "./TextArea";
+import Details from "./Details";
 import axios from "axios";
 
 export default function Dex() {
   const [dexOpened, setDexOpened] = useState(false);
+  const [dexDeviceSrc, setDexDeviceSrc] = useState(
+    "/images/dex/dex-closed.png"
+  );
+  const [pokemon, setPokemon] = useState([
+    { name: "Placeholder", id: 0, url: "placeholder.com" },
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [pokemonCount, setPokemonCount] = useState(0);
+  const [pokemonData, setPokemonData] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeUrl, setActiveUrl] = useState(
+    "https://pokeapi.co/api/v2/pokemon/1"
+  );
+  const [pageNumber, setPageNumber] = useState(1);
+  const [offset, setOffset] = useState(0);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
+  const [previousPageUrl, setPreviousPageUrl] = useState(null);
 
-  var dexDeviceSrc = "/images/dex/dex-closed.png";
+  useEffect(() => {
+    if (dexOpened) {
+      setDexDeviceSrc("/images/dex/dex-opened.png");
+    } else {
+      setDexDeviceSrc("/images/dex/dex-closed.png");
+    }
+  }, [dexOpened]);
+
+  useEffect(() => {
+    fetchPokemon();
+    fetchPokemonCount();
+    setTimeout(() => {
+      handlePowerSwitchPos();
+    }, 100);
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated Pokemon");
+  }, [pokemon]);
+
+  useEffect(() => {
+    updateActiveUrl();
+  }, [activeIndex]);
+
+  useEffect(() => {
+    fetchPokemon();
+    updateActiveUrl();
+  }, [pageNumber]);
+
+  useEffect(() => {
+    if (dexOpened) {
+      handleLeftScreenPos();
+      handleRightScreenPos();
+      handleTextSize();
+    }
+    handleButtonsPos();
+  }, [dexOpened]);
+
   var dexPowerSwitchSrc = "/images/dex/dex-power-switch.png";
   var dexSearchBtnSrc = "/images/dex/dex-search-btn.png";
   var dexDpadSrc = "/images/dex/dex-dpad.png";
 
-  if (dexOpened) {
-    dexDeviceSrc = "/images/dex/dex-opened.png";
-  } else {
-    dexDeviceSrc = "/images/dex/dex-closed.png";
-  }
+  const fetchPokemon = () => {
+    setLoading(true);
+    axios
+      .get(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=8`)
+      .then((res) => {
+        setLoading(false);
+        setPokemon(
+          res.data.results.map((mon) => ({
+            name: mon.name,
+            id: mon.url.split("/")[6],
+            url: mon.url,
+          }))
+        );
+      });
+  };
+
+  const updateActiveUrl = () => {
+    setActiveUrl(
+      `https://pokeapi.co/api/v2/pokemon/${activeIndex + offset + 1}`
+    );
+  };
+
+  const fetchPokemonCount = () => {
+    axios.get(pokemonCountSrc).then((res) => {
+      setPokemonCount(res.data.pokemon_entries.length);
+      // console.log("pokemonCount", pokemonCount);
+    });
+  };
 
   const handleDexOpenState = () => {
     setDexOpened(!dexOpened);
@@ -25,60 +102,41 @@ export default function Dex() {
     if (direction == "up") {
       if (activeIndex > 0) {
         setActiveIndex(activeIndex - 1);
-      } else {
-        setOffset(offset - 1);
       }
     } else if (direction == "down") {
       if (activeIndex < 7) {
         setActiveIndex(activeIndex + 1);
+      }
+    }
+
+    if (direction == "right") {
+      // console.log("pressed right");
+      if (pageNumber >= Math.ceil(pokemonCount / 8)) {
+        setNextPageUrl(null);
       } else {
-        setOffset(offset + 1);
+        setNextPageUrl(
+          `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
+        );
+        setOffset(offset + 8);
+        setPageNumber(pageNumber + 1);
+        setActiveIndex(0);
+      }
+    } else if (direction == "left") {
+      // console.log("pressed left");
+      if (pageNumber <= 1) {
+        setPreviousPageUrl(null);
+      } else {
+        setPreviousPageUrl(
+          `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
+        );
+        setOffset(offset - 8);
+        setPageNumber(pageNumber - 1);
+        setActiveIndex(0);
       }
     }
   };
 
-  const [pokemon, setPokemon] = useState([]);
-  const [pokemonData, setPokemonData] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [offset, setOffset] = useState(0);
-
-  const fetchPokemon = () => {
-    axios
-      .get(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=8`)
-      .then((res) => {
-        setPokemon(
-          res.data.results.map((mon) => ({ name: mon.name, url: mon.url }))
-        );
-      });
-    // console.log(pokemon);
-  };
-
-  const fetchPokemonData = () => {};
-
-  // const handleNextOffset = () => {
-  // }
-
-  useEffect(() => {
-    fetchPokemon();
-    fetchPokemonData();
-  }, []);
-
-  useEffect(() => {
-    setTimeout(() => {
-      handlePowerSwitchPos();
-    }, 100);
-  }, []);
-
-  useEffect(() => {
-    if (dexOpened) {
-      handleLeftScreenPos();
-      handleRightScreenPos();
-      handleTextSize();
-    }
-    handleButtonsPos();
-
-    // console.log("Running effect");
-  }, [dexOpened]);
+  const pokemonCountSrc = "https://pokeapi.co/api/v2/pokedex/national";
 
   return (
     <div className="dex">
@@ -103,9 +161,13 @@ export default function Dex() {
             }`}
           >
             <Directory
+              loading={loading}
               dexOpened={dexOpened}
               pokemon={pokemon}
+              pageNumber={pageNumber}
+              offset={offset}
               activeIndex={activeIndex}
+              handleTextSizeFunc={handleTextSize}
             />
           </div>
           <div
@@ -113,7 +175,7 @@ export default function Dex() {
               dexOpened ? "dex-opened" : "dex-closed"
             }`}
           >
-            <TextArea dexOpened={dexOpened} />
+            <Details dexOpened={dexOpened} url={activeUrl} />
           </div>
           <div
             style={{ backgroundImage: `url(${dexSearchBtnSrc})` }}
@@ -137,11 +199,13 @@ export default function Dex() {
             </div>
             <div className="dpad-row row-two">
               <div
+                onClick={() => handleDpadBehavior("left")}
                 className={`dex-dpad dpad-left ${
                   dexOpened ? "dex-opened" : "dex-closed"
                 }`}
               ></div>
               <div
+                onClick={() => handleDpadBehavior("right")}
                 className={`dex-dpad dpad-right ${
                   dexOpened ? "dex-opened" : "dex-closed"
                 }`}
@@ -188,8 +252,8 @@ function handleTextSize() {
     const directoryContentBlock = document.querySelectorAll(
       ".directory-content-block"
     );
-    const textAreaHeader = document.querySelectorAll(".text-area-header");
-    const textAreaContent = document.querySelectorAll(".text-area-content");
+    const detailsHeader = document.querySelectorAll(".details-header");
+    const detailsContent = document.querySelectorAll(".details-content");
     const dexImgWidth = window.getComputedStyle(
       document.querySelector(".dex-device-img")
     ).width;
@@ -199,10 +263,10 @@ function handleTextSize() {
       element.style.fontSize = parseFloat(dexImgWidth) * 0.016 + "px";
     });
 
-    textAreaHeader.forEach((element) => {
+    detailsHeader.forEach((element) => {
       element.style.fontSize = parseFloat(dexImgWidth) * 0.02 + "px";
     });
-    textAreaContent.forEach((element) => {
+    detailsContent.forEach((element) => {
       element.style.fontSize = parseFloat(dexImgWidth) * 0.016 + "px";
     });
   };
