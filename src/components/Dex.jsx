@@ -24,6 +24,13 @@ export default function Dex() {
   const [previousPageUrl, setPreviousPageUrl] = useState(null);
 
   useEffect(() => {
+    const imageSources = ["/images/dex/dex-opened.png"];
+    imageSources.forEach((imgSrc) => {
+      new Image().src = imgSrc;
+    });
+  }, []);
+
+  useEffect(() => {
     if (dexOpened) {
       setDexDeviceSrc("/images/dex/dex-opened.png");
     } else {
