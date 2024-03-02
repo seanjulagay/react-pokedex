@@ -34,9 +34,6 @@ export default function Dex() {
   useEffect(() => {
     fetchPokemon();
     fetchPokemonCount();
-    setTimeout(() => {
-      handlePowerSwitchPos();
-    }, 100);
   }, []);
 
   useEffect(() => {
@@ -154,6 +151,7 @@ export default function Dex() {
             src={dexDeviceSrc}
             alt=""
             className="dex-device-img"
+            onLoad={handlePowerSwitchPos}
           />
           <div
             className={`dex-left-screen ${
