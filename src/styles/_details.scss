@@ -10,16 +10,19 @@
   }
   .details-container {
     padding: 2%;
-    .details-header {
-      margin-bottom: 2%;
-    }
+    display: flex;
+    flex-direction: column;
     .pokemon-image {
+      align-self: center;
       filter: grayscale(100%) sepia(100%) hue-rotate(80deg) brightness(0.8)
         saturate(2);
-      height: 30rem;
-      width: 30rem;
+      height: 20rem;
+      width: 20rem;
       clip: rect(0, 100px, 100px, 0);
       image-rendering: pixelated;
+    }
+    .details-header {
+      margin-bottom: 2%;
     }
   }
   * {

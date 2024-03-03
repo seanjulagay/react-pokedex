@@ -5,8 +5,6 @@ export default function Directory({
   loading,
   dexOpened,
   pokemon,
-  pageNumber,
-  offset,
   activeIndex,
   handleTextSizeFunc,
 }) {
@@ -16,17 +14,6 @@ export default function Directory({
 
   const formatDirectoryItem = (id, name) => {
     var nameCaps = name[0].toUpperCase() + name.slice(1);
-
-    // if (indexOffset < 10) {
-    //   return "#00" + indexOffset + "   " + monCaps;
-    // } else if (indexOffset >= 10 || index < 100) {
-    //   return "#0" + indexOffset + "   " + monCaps;
-    // } else {
-    //   return "#" + indexOffset + "   " + monCaps;
-    // }
-
-    // console.log(id, name);
-
     if (id < 10) {
       return "#000" + id + " " + nameCaps;
     } else if (id >= 10 && id < 100) {

@@ -11,6 +11,9 @@ export default function Dex() {
   const [pokemon, setPokemon] = useState([
     { name: "Placeholder", id: 0, url: "placeholder.com" },
   ]);
+  const [nextPokemon, setNextPokemon] = useState([
+    { name: "Placeholder2", id: 1, url: "placeholder2.com" },
+  ]);
   const [loading, setLoading] = useState(true);
   const [pokemonCount, setPokemonCount] = useState(0);
   const [pokemonData, setPokemonData] = useState([]);
@@ -18,16 +21,16 @@ export default function Dex() {
   const [activeUrl, setActiveUrl] = useState(
     "https://pokeapi.co/api/v2/pokemon/1"
   );
+  const [activeId, setActiveId] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
   const [offset, setOffset] = useState(0);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [previousPageUrl, setPreviousPageUrl] = useState(null);
 
   useEffect(() => {
-    const imageSources = ["/images/dex/dex-opened.png"];
-    imageSources.forEach((imgSrc) => {
-      new Image().src = imgSrc;
-    });
+    preloadOpenedDexImg();
+    fetchPokemon();
+    fetchPokemonCount();
   }, []);
 
   useEffect(() => {
@@ -39,21 +42,17 @@ export default function Dex() {
   }, [dexOpened]);
 
   useEffect(() => {
-    fetchPokemon();
-    fetchPokemonCount();
-  }, []);
-
-  useEffect(() => {
     console.log("Updated Pokemon");
   }, [pokemon]);
 
   useEffect(() => {
-    updateActiveUrl();
+    updateActiveId();
   }, [activeIndex]);
 
   useEffect(() => {
+    preloadPokemonSprites();
     fetchPokemon();
-    updateActiveUrl();
+    updateActiveId();
   }, [pageNumber]);
 
   useEffect(() => {
@@ -69,7 +68,7 @@ export default function Dex() {
   var dexSearchBtnSrc = "/images/dex/dex-search-btn.png";
   var dexDpadSrc = "/images/dex/dex-dpad.png";
 
-  const fetchPokemon = () => {
+  const fetchPokemon = async () => {
     setLoading(true);
     axios
       .get(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=8`)
@@ -83,18 +82,46 @@ export default function Dex() {
           }))
         );
       });
+
+    // const nextResponse = await axios.get(
+    //   `https://pokeapi.co/api/v2/pokemon?offset=${nextOffset}&limit=16`
+    // );
+
+    // setNextPokemon(
+    //   nextResponse.data.results.map((mon) => {
+    //     name: mon.name;
+    //     id: mon.url.split("/")[6];
+    //     url: mon.url;
+    //   })
+    // );
   };
 
-  const updateActiveUrl = () => {
-    setActiveUrl(
-      `https://pokeapi.co/api/v2/pokemon/${activeIndex + offset + 1}`
-    );
+  const preloadOpenedDexImg = () => {
+    const imageSources = ["/images/dex/dex-opened.png"];
+    imageSources.forEach((imgSrc) => {
+      new Image().src = imgSrc;
+    });
+  };
+
+  const preloadPokemonSprites = () => {
+    const imageSources = [];
+    for (var i = offset; i < offset + 8; i++) {
+      imageSources.push(
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i}.png`
+      );
+    }
+    imageSources.forEach((imgSrc) => {
+      new Image().src = imgSrc;
+    });
+  };
+
+  const updateActiveId = () => {
+    setActiveId(activeIndex + offset + 1);
   };
 
   const fetchPokemonCount = () => {
     axios.get(pokemonCountSrc).then((res) => {
       setPokemonCount(res.data.pokemon_entries.length);
-      // console.log("pokemonCount", pokemonCount);
     });
   };
 
@@ -114,7 +141,6 @@ export default function Dex() {
     }
 
     if (direction == "right") {
-      // console.log("pressed right");
       if (pageNumber >= Math.ceil(pokemonCount / 8)) {
         setNextPageUrl(null);
       } else {
@@ -126,7 +152,6 @@ export default function Dex() {
         setActiveIndex(0);
       }
     } else if (direction == "left") {
-      // console.log("pressed left");
       if (pageNumber <= 1) {
         setPreviousPageUrl(null);
       } else {
@@ -169,8 +194,6 @@ export default function Dex() {
               loading={loading}
               dexOpened={dexOpened}
               pokemon={pokemon}
-              pageNumber={pageNumber}
-              offset={offset}
               activeIndex={activeIndex}
               handleTextSizeFunc={handleTextSize}
             />
@@ -180,7 +203,7 @@ export default function Dex() {
               dexOpened ? "dex-opened" : "dex-closed"
             }`}
           >
-            <Details dexOpened={dexOpened} url={activeUrl} />
+            <Details dexOpened={dexOpened} id={activeId} offset={offset} />
           </div>
           <div
             style={{ backgroundImage: `url(${dexSearchBtnSrc})` }}
