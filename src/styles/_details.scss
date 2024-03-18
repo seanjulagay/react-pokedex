@@ -1,6 +1,18 @@
+@use "variables" as *;
+
 .details {
   height: 100%;
   width: 100;
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $details-content-green;
+  }
+  &::-webkit-scrollbar-track {
+    background: $details-background-green;
+  }
   &.dex-closed {
     opacity: 0;
   }
@@ -12,20 +24,40 @@
     padding: 2%;
     display: flex;
     flex-direction: column;
-    .pokemon-image {
-      align-self: center;
-      filter: grayscale(100%) sepia(100%) hue-rotate(80deg) brightness(0.8)
-        saturate(2);
-      height: 20rem;
-      width: 20rem;
-      clip: rect(0, 100px, 100px, 0);
-      image-rendering: pixelated;
+    .center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .details-header {
       margin-bottom: 2%;
     }
+    .details-subheader2 {
+      font-weight: 400;
+      margin-bottom: 2%;
+      &.subheader-split {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      .subheader-section {
+        flex: 1;
+      }
+    }
+    .details-content {
+      margin-bottom: 2%;
+    }
+    .pokemon-image {
+      align-self: center;
+      filter: grayscale(100%) sepia(100%) hue-rotate(80deg) brightness(0.8)
+        saturate(2);
+      height: 50%;
+      width: 50%;
+      clip: rect(0, 100px, 100px, 0);
+      image-rendering: pixelated;
+    }
   }
   * {
-    color: #a3d89b;
+    color: $details-content-green;
   }
 }

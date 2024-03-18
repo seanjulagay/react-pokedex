@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Directory from "./Directory";
 import Details from "./Details";
 import axios from "axios";
 
 export default function Dex() {
+  const detailsRef = useRef(null);
+
   const [dexOpened, setDexOpened] = useState(false);
   const [dexDeviceSrc, setDexDeviceSrc] = useState(
     "/images/dex/dex-closed.png"
@@ -11,25 +13,22 @@ export default function Dex() {
   const [pokemon, setPokemon] = useState([
     { name: "Placeholder", id: 0, url: "placeholder.com" },
   ]);
-  const [nextPokemon, setNextPokemon] = useState([
-    { name: "Placeholder2", id: 1, url: "placeholder2.com" },
-  ]);
+  const [preloadedPokemon, setPreloadedPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pokemonCount, setPokemonCount] = useState(0);
-  const [pokemonData, setPokemonData] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [activeUrl, setActiveUrl] = useState(
-    "https://pokeapi.co/api/v2/pokemon/1"
-  );
   const [activeId, setActiveId] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
   const [offset, setOffset] = useState(0);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [previousPageUrl, setPreviousPageUrl] = useState(null);
+  const [pageButtonCooldownActive, setPageButtonCooldownActive] =
+    useState(false);
 
   useEffect(() => {
     preloadOpenedDexImg();
     fetchPokemon();
+    fetchPreloadedPokemon();
     fetchPokemonCount();
   }, []);
 
@@ -42,8 +41,12 @@ export default function Dex() {
   }, [dexOpened]);
 
   useEffect(() => {
-    console.log("Updated Pokemon");
+    // console.log("Updated Pokemon");
   }, [pokemon]);
+
+  useEffect(() => {
+    console.log("Preload", preloadedPokemon);
+  }, [preloadedPokemon]);
 
   useEffect(() => {
     updateActiveId();
@@ -52,6 +55,7 @@ export default function Dex() {
   useEffect(() => {
     preloadPokemonSprites();
     fetchPokemon();
+    fetchPreloadedPokemon();
     updateActiveId();
   }, [pageNumber]);
 
@@ -68,6 +72,57 @@ export default function Dex() {
   var dexSearchBtnSrc = "/images/dex/dex-search-btn.png";
   var dexDpadSrc = "/images/dex/dex-dpad.png";
 
+  const activateButtonCooldown = () => {
+    setPageButtonCooldownActive(true);
+    setTimeout(() => {
+      setPageButtonCooldownActive(false);
+    }, 1000);
+  };
+
+  const fetchPreloadedPokemon = async () => {
+    let prevOffset = offset - 8;
+    let nextOffset = offset + 8;
+    let prevOffsetPromises = [];
+    let nextOffsetPromises = [];
+    let prevData = [];
+    let nextData = [];
+    setPreloadedPokemon(null);
+    if (offset >= 8) {
+      console.log("first cond");
+      prevOffsetPromises.push(
+        axios.get(
+          `https://pokeapi.co/api/v2/pokemon?offset=${prevOffset}&limit=8`
+        )
+      );
+    }
+    if (offset <= pokemonCount - 8) {
+      console.log("second cond");
+      nextOffsetPromises.push(
+        axios.get(
+          `https://pokeapi.co/api/v2/pokemon?offset=${nextOffset}&limit=8`
+        )
+      );
+    }
+    console.log("promises", prevOffsetPromises, nextOffsetPromises);
+    console.log(
+      "promise",
+      axios.get(
+        `https://pokeapi.co/api/v2/pokemon?offset=${prevOffset}&limit=8`
+      )
+    );
+    const prevResponses = await Promise.all(prevOffsetPromises);
+    const nextResponses = await Promise.all(nextOffsetPromises);
+    if (prevResponses.length > 0) {
+      prevData = prevResponses.map((response) => response.data.results);
+      console.log("loading prevs", prevData.results);
+    }
+    if (nextResponses.length > 0) {
+      nextData = nextResponses.map((response) => response.data.results);
+      console.log("loading nexts", nextData.results);
+    }
+    setPreloadedPokemon([...prevData, ...nextData]);
+  };
+
   const fetchPokemon = async () => {
     setLoading(true);
     axios
@@ -82,18 +137,6 @@ export default function Dex() {
           }))
         );
       });
-
-    // const nextResponse = await axios.get(
-    //   `https://pokeapi.co/api/v2/pokemon?offset=${nextOffset}&limit=16`
-    // );
-
-    // setNextPokemon(
-    //   nextResponse.data.results.map((mon) => {
-    //     name: mon.name;
-    //     id: mon.url.split("/")[6];
-    //     url: mon.url;
-    //   })
-    // );
   };
 
   const preloadOpenedDexImg = () => {
@@ -133,35 +176,83 @@ export default function Dex() {
     if (direction == "up") {
       if (activeIndex > 0) {
         setActiveIndex(activeIndex - 1);
+        handleDexScrollReset();
+      } else {
+        if (pageNumber <= 1) {
+          setPreviousPageUrl(null);
+        } else {
+          setPreviousPageUrl(
+            `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
+          );
+          setOffset(offset - 8);
+          setPageNumber(pageNumber - 1);
+          setActiveIndex(0);
+          activateButtonCooldown();
+        }
       }
     } else if (direction == "down") {
       if (activeIndex < 7) {
         setActiveIndex(activeIndex + 1);
+        handleDexScrollReset();
+      } else {
+        if (pageNumber >= Math.ceil(pokemonCount / 8)) {
+          setNextPageUrl(null);
+        } else {
+          setNextPageUrl(
+            `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
+          );
+          setOffset(offset + 8);
+          setPageNumber(pageNumber + 1);
+          setActiveIndex(0);
+          activateButtonCooldown();
+        }
       }
     }
 
-    if (direction == "right") {
-      if (pageNumber >= Math.ceil(pokemonCount / 8)) {
-        setNextPageUrl(null);
-      } else {
-        setNextPageUrl(
-          `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
-        );
-        setOffset(offset + 8);
-        setPageNumber(pageNumber + 1);
-        setActiveIndex(0);
+    if (!loading && !pageButtonCooldownActive) {
+      if (direction == "right") {
+        if (pageNumber >= Math.ceil(pokemonCount / 8)) {
+          setNextPageUrl(null);
+        } else {
+          setNextPageUrl(
+            `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
+          );
+          setOffset(offset + 8);
+          setPageNumber(pageNumber + 1);
+          setActiveIndex(0);
+          activateButtonCooldown();
+        }
+      } else if (direction == "left") {
+        if (pageNumber <= 1) {
+          setPreviousPageUrl(null);
+        } else {
+          setPreviousPageUrl(
+            `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
+          );
+          setOffset(offset - 8);
+          setPageNumber(pageNumber - 1);
+          setActiveIndex(0);
+          activateButtonCooldown();
+        }
       }
-    } else if (direction == "left") {
-      if (pageNumber <= 1) {
-        setPreviousPageUrl(null);
-      } else {
-        setPreviousPageUrl(
-          `https://pokeapi.co/api/v2/pokemon?offset${offset}&limit=8`
-        );
-        setOffset(offset - 8);
-        setPageNumber(pageNumber - 1);
-        setActiveIndex(0);
-      }
+    }
+  };
+
+  const handleDexScrollDown = () => {
+    if (detailsRef.current) {
+      detailsRef.current.scrollTop += 100;
+    }
+  };
+
+  const handleDexScrollUp = () => {
+    if (detailsRef.current) {
+      detailsRef.current.scrollTop -= 100;
+    }
+  };
+
+  const handleDexScrollReset = () => {
+    if (detailsRef.current) {
+      detailsRef.current.scrollTop = 0;
     }
   };
 
@@ -203,7 +294,13 @@ export default function Dex() {
               dexOpened ? "dex-opened" : "dex-closed"
             }`}
           >
-            <Details dexOpened={dexOpened} id={activeId} offset={offset} />
+            <Details
+              innerRef={detailsRef}
+              dexOpened={dexOpened}
+              id={activeId}
+              offset={offset}
+              totalPokemon={pokemonCount}
+            />
           </div>
           <div
             style={{ backgroundImage: `url(${dexSearchBtnSrc})` }}
@@ -254,6 +351,7 @@ export default function Dex() {
             }`}
           >
             <div
+              onClick={handleDexScrollUp}
               className={`dex-scroll scroll-up ${
                 dexOpened ? "dex-opened" : "dex-closed"
               }`}
@@ -261,6 +359,7 @@ export default function Dex() {
               <div className="dex-scroll-overlay scroll-up-overlay"></div>
             </div>
             <div
+              onClick={handleDexScrollDown}
               className={`dex-scroll scroll-down ${
                 dexOpened ? "dex-opened" : "dex-closed"
               }`}
@@ -281,6 +380,7 @@ function handleTextSize() {
       ".directory-content-block"
     );
     const detailsHeader = document.querySelectorAll(".details-header");
+    const detailsSubheader2 = document.querySelectorAll(".details-subheader2");
     const detailsContent = document.querySelectorAll(".details-content");
     const dexImgWidth = window.getComputedStyle(
       document.querySelector(".dex-device-img")
@@ -293,6 +393,9 @@ function handleTextSize() {
 
     detailsHeader.forEach((element) => {
       element.style.fontSize = parseFloat(dexImgWidth) * 0.02 + "px";
+    });
+    detailsSubheader2.forEach((element) => {
+      element.style.fontSize = parseFloat(dexImgWidth) * 0.018 + "px";
     });
     detailsContent.forEach((element) => {
       element.style.fontSize = parseFloat(dexImgWidth) * 0.016 + "px";
